@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#set the time then run Clockywock
+#Since it is analog we don't care about AM/PM or the actual date
+
+echo "Set the time"
+echo "What is the hour?"
+ 
+read hourInput
+
+echo "What is the minutes?"
+
+read  minuteInput
+
+sudo date -s "Tue April 24 $hourInput:$minuteInput:00 2019" 
+
+
+#run clockywock
+/home/pi/Documents/clockywock-0.3.1a/clockywock

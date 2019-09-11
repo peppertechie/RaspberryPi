@@ -1,23 +1,65 @@
+#Much help from https://www.instructables.com/id/Play-Video-With-Python-and-GPIO/
+#And https://gpiozero.readthedocs.io/en/stable/
+#Clockywock https://soomka.com/
+
+#Simple program to run on an offline device to simulate a control panel
+#Single rotary switch with 3 positions on1-off-on2
+#selects between a terminal analog clock, Pi camera view, and a video 
+
+#To Do
+#At first run ask the user for the hours and minutes to set the clock since 
+#No network is expected to be connected
+#Possibly add a temerature sensor and LCD Display
+
+#test switches
+#switch into ground, BCM23, BCM24
+#Physical    14,     16,    18
+
+#imports
+from gpiozero import LED, Button
+from signal import pause
+import os
+import sys
+from picamera import PiCamera
+from subprocess import Popen
+
+#set button variables
+buttoncam = Button(23)
+buttonspace = Button(24)
+
+#generic camera variable with resolution for 3.5" display
+camera = PiCamera(resolution=(480, 320))
+
+#Subroutine to show the camera input on the screen
+def cameraon():
+        os.system('killall clockywock')
+                camera.start_preview()
+        camera.annotate_text = "Airlock"
+        return
+
+#Subroutine to show a continuous loop of a movie on the screen
+def spacemovie():
+        os.system('killall clockywock')
+        p = Popen(['hello_video.bin', '--loop', '/home/pi/starfield.h264'])
+        return
+
+#Subroutine when either switch is turned off (3rd state )
+#stops both the move and camera preview and starts the clock again
+def clock():
+        camera.stop_preview()
+        os.system('killall hello_video.bin')
+        p = Popen(['/home/pi/clockywock-0.3.1a/clockywock'])
+        return
+
+#Start with clock
+p = Popen(['/home/pi/clockywock-0.3.1a/clockywock'])
+
+#Events to Trigger
+buttoncam.when_pressed = cameraon
+buttoncam.when_released = clock
+buttonspace.when_pressed = spacemovie
+buttonspace.when_released = clock
+
+pause()
 
 
-#Program to drive a HDMI display as a spaceship panel
-#Switch with 3 positions
-#1 Camera for hallway
-#2 Space video flying through stars
-#3 Clockywock
-#Resources
-#https://www.instructables.com/id/Play-Video-With-Python-and-GPIO/
-#https://soomka.com/
-#https://raspberrypihq.com/use-a-push-button-with-raspberry-pi-gpio/
-
-
-import RPi.GPIO as GPIO # Import Raspberry Pi GPIO library
-
-GPIO.setwarnings(False) # Ignore warning for now
-GPIO.setmode(GPIO.BOARD) # Use physical pin numbering
-GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 10 to be an input pin and set initial value to be pulled low (off)
-
-
-while True: # Run forever
-    if GPIO.input(10) == GPIO.HIGH:
-        print("Button was pushed!")
